@@ -35,7 +35,7 @@ class Layer:
         if self.previous == None:
             return data
         prevValues = self.previous.calculateValues(data)
-        self.values = np.empty((self.nodeCount))
+        self.outputValues = np.empty((self.nodeCount))
 
         for nodeIndex in range(self.nodeCount):
             sum = 0
@@ -44,17 +44,18 @@ class Layer:
                     prevValues[prevIndex] * self.weights[prevIndex]
                     + self.biases[prevIndex]
                 )
-            self.values[nodeIndex] = mlmath.sigmoid(sum)
-        return self.values
+            self.inputValues[nodeIndex] = sum
+            self.outputValues[nodeIndex] = mlmath.sigmoid(sum)
+        return self.outputValues
 
     def cost(self, target: np.ndarray) -> float:
         if self.nodeCount != target.shape[0]:
             raise Exception("Target not same size as output layer")
-        if self.values == None:
+        if self.outputValues == None:
             raise Exception("Values not calculated")
 
         s = 0
 
         for i in range(self.nodeCount):
-            s += (target[i] - self.values) ** 2
+            s += (target[i] - self.outputValues) ** 2
         s /= self.nodeCount
