@@ -5,9 +5,9 @@ def sigmoid(x):
     """
     Return σ(x)
 
-    σ(x) = 1/(1 + e^x)
+    σ(x) = 1/(1 + e^(-x))
     """
-    return 1 / (1 + math.exp(x))
+    return 1 / (1 + math.exp(-x))
 
 
 def normalize(x, min, max):
