@@ -12,8 +12,8 @@ class Layer:
     ):
         self.nodeCount = nodes
         self.previous = previous
-        self.outputValues = np.empty((self.nodeCount))
-        self.inputValues = np.empty((self.nodeCount))
+        self.outputValues = np.empty(0)
+        self.inputValues = np.empty(0)
 
         if previous != None:
             if weights != None:
@@ -35,7 +35,7 @@ class Layer:
         The calculated values
 
         """
-        if forceRecalculate and self.outputValues != None:
+        if forceRecalculate and self.outputValues.size != 0:
             return self.outputValues
         if self.previous == None:
             return data
