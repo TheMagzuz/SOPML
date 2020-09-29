@@ -12,6 +12,9 @@ class Layer:
     ):
         self.nodeCount = nodes
         self.previous = previous
+        self.outputValues = np.empty((self.nodeCount))
+        self.inputValues = np.empty((self.nodeCount))
+
         if previous != None:
             if weights != None:
                 self.weights = weights
