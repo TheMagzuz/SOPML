@@ -23,7 +23,7 @@ class Layer:
             else:
                 self.biases = np.empty((nodes, previous.nodeCount))
 
-    def calculateValues(self, data: np.ndarray) -> np.ndarray:
+    def calculateValues(self, data: np.ndarray, forceRecalculate=False) -> np.ndarray:
         """
         Calculate the values of the layer, and set them on the layer object
 
@@ -32,8 +32,11 @@ class Layer:
         The calculated values
 
         """
+        if forceRecalculate and self.outputValues != None:
+            return self.outputValues
         if self.previous == None:
             return data
+
         prevValues = self.previous.calculateValues(data)
         self.outputValues = np.empty((self.nodeCount))
 
