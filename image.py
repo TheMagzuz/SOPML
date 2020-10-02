@@ -5,15 +5,15 @@ class Image:
     def __init__(self, data, label: int, width: int, height: int):
         self.label = label
         self.data = data
-        self.matrixData = np.empty(0)
+        self.displayData = np.empty(0)
         self.width = width
         self.height = height
 
     def Data2D(self, forceRecalculate=False):
-        if not forceRecalculate and self.matrixData.size != 0:
-            return self.matrixData
+        if not forceRecalculate and self.displayData.size != 0:
+            return self.displayData
 
-        self.matrixData = np.empty((self.width, self.height))
+        self.displayData = np.empty((self.width, self.height))
 
         for row in range(self.height):
             for col in range(self.width):
