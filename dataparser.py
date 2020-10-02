@@ -4,6 +4,7 @@ import mlmath
 
 labels = []
 images = np.empty((1))
+imagesLin = np.empty((1))
 normalizedImages = np.empty((1))
 
 
@@ -16,7 +17,7 @@ def loadLabels(labelsPath="train-labels.idx1-ubyte"):
 
 
 def loadImages(imagesPath="train-images.idx3-ubyte"):
-    global images
+    global images, imagesLin, normalizedImages
     with open(imagesPath, "rb") as imagesFile:
         imagesFile.seek(4)
         numImages = int.from_bytes(imagesFile.read(4), "big")
