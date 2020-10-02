@@ -2,7 +2,8 @@ import numpy as np
 
 
 class Image:
-    def __init__(self, data, width: int, height: int):
+    def __init__(self, data, label: int, width: int, height: int):
+        self.label = label
         self.data = data
         self.matrixData = np.empty(0)
         self.width = width
