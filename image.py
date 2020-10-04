@@ -20,3 +20,8 @@ class Image:
                 self.displayData[row, col] = self.data[row * self.width + col]
 
         return self.displayData
+
+    def expectedVector(self):
+        v = np.zeros(10)
+        v[self.label] = 1
+        return v
