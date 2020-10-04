@@ -17,6 +17,6 @@ class Image:
 
         for row in range(self.height):
             for col in range(self.width):
-                self.matrixData[row, col] = self.data[row * self.width + col]
+                self.displayData[row, col] = self.data[row * self.width + col]
 
-        return self.matrixData
+        return self.displayData
