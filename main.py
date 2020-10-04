@@ -8,7 +8,7 @@ def createLayers(layers: list):
     layerList = []
     l = Layer(layers[0])
     layerList.append(l)
-    for i in range(1, len(layers) - 1):
+    for i in range(1, len(layers)):
         l = Layer(layers[i], l)
         layerList.append(l)
     return layerList
