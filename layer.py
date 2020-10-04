@@ -25,7 +25,7 @@ class Layer:
             if biases != None:
                 self.biases = biases
             else:
-                self.biases = np.empty((nodes, previous.nodeCount))
+                self.biases = np.empty(nodes)
 
     def calculateValues(self, image: Image, forceRecalculate=False) -> np.ndarray:
         """
