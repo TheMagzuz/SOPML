@@ -16,6 +16,5 @@ def createLayers(layers: list):
 
 def randomizeLayers(layers: typing.List[Layer], variance: float):
     for l in layers:
-        for i in range(l.nodeCount):
-            l.weights[i] = random.uniform(-variance, variance)
-            l.biases[i] = random.uniform(-variance, variance)
+        rV = np.vectorize(lambda _: random.uniform(-variance, variance))
+        l.weights = rV(l.weights)
