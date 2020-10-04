@@ -1,7 +1,6 @@
 from __future__ import annotations
 import numpy as np
 import mlmath
-from image import Image
 
 
 class Layer:
@@ -28,7 +27,7 @@ class Layer:
             else:
                 self.biases = np.empty(nodes)
 
-    def calculateValues(self, image: Image, forceRecalculate=False) -> np.ndarray:
+    def calculateValues(self, data: np.ndarray, forceRecalculate=False) -> np.ndarray:
         """
         Calculate the values of the layer, and set them on the layer object
 
@@ -40,9 +39,9 @@ class Layer:
         if forceRecalculate and self.outputValues.size != 0:
             return self.outputValues
         if self.previous == None:
-            return image.data
+            return data
 
-        prevValues = self.previous.calculateValues(image)
+        prevValues = self.previous.calculateValues(data)
         self.outputValues = np.empty((self.nodeCount))
 
         for nodeIndex in range(self.nodeCount):
