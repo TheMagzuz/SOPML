@@ -42,7 +42,7 @@ class Layer:
             return image.data
 
         prevValues = self.previous.calculateValues(image)
-        self.inputValues = np.dot(self.weights, prevValues)
+        self.inputValues = np.dot(self.weights, prevValues) + self.biases
         self.outputValues = np.vectorize(mlmath.sigmoid)(self.inputValues)
 
         return self.outputValues
