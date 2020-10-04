@@ -42,17 +42,9 @@ class Layer:
             return data
 
         prevValues = self.previous.calculateValues(data)
-        self.outputValues = np.empty((self.nodeCount))
+        self.inputValues = np.dot(self.weights, prevValues) + self.biases
+        self.outputValues = np.vectorize(mlmath.sigmoid)(self.inputValues)
 
-        for nodeIndex in range(self.nodeCount):
-            sum = 0
-            for prevIndex in range(self.previous.nodeCount):
-                sum += (
-                    prevValues[prevIndex] * self.weights[prevIndex]
-                    + self.biases[prevIndex]
-                )
-            self.inputValues[nodeIndex] = sum
-            self.outputValues[nodeIndex] = mlmath.sigmoid(sum)
         return self.outputValues
 
     def cost(self, target: np.ndarray) -> float:
