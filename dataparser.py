@@ -1,23 +1,27 @@
 import struct
 import numpy as np
 import mlmath
+from image import Image
 
 labels = []
-images = np.empty((1))
-imagesLin = np.empty((1))
-normalizedImages = np.empty((1))
+images = []
+# imagesLin = np.empty((1))
+# normalizedImages = np.empty((1))
 
 
-def loadLabels(labelsPath="train-labels.idx1-ubyte"):
+def loadLabels(labelsPath="train-labels.idx1-ubyte", updateImages=True):
     global labels
     with open(labelsPath, "rb") as labelsFile:
         labelsFile.seek(8)
         labelBytes = labelsFile.read()
         labels = struct.unpack(">" + "B" * (len(labelBytes)), labelBytes)
+    if updateImages and len(images) > 0:
+        for imageIndex in range(len(images)):
+            images[imageIndex].label = labels[imageIndex]
 
 
 def loadImages(imagesPath="train-images.idx3-ubyte"):
-    global images, imagesLin, normalizedImages
+    global images
     with open(imagesPath, "rb") as imagesFile:
         imagesFile.seek(4)
         numImages = int.from_bytes(imagesFile.read(4), "big")
@@ -25,7 +29,6 @@ def loadImages(imagesPath="train-images.idx3-ubyte"):
         imageColumns = int.from_bytes(imagesFile.read(4), "big")
 
         images = np.empty((numImages, imageRows, imageColumns), np.ubyte)
-        normalizedImages = np.empty((numImages, imageRows, imageColumns), float)
         imageBytes = imagesFile.read()
         stepSize = imageRows * imageColumns
 
@@ -33,12 +36,13 @@ def loadImages(imagesPath="train-images.idx3-ubyte"):
             imageBytes[i : i + stepSize] for i in range(0, len(imageBytes), stepSize)
         ]
 
-        for imageIdx in range(numImages):
-            for row in range(imageRows):
-                for col in range(imageColumns):
-                    images[imageIdx, row, col] = imagesLin[imageIdx][
-                        row * imageColumns + col
-                    ]
-                    normalizedImages[imageIdx, row, col] = mlmath.normalize(
-                        images[imageIdx, row, col], 0, 255
-                    )
+        for imageIndex in range(numImages):
+            imageData = imagesLin[imageIndex]
+            images.append(
+                Image(
+                    imageData,
+                    (-1 if len(labels) <= 0 else labels[imageIndex]),
+                    imageColumns,
+                    imageRows,
+                )
+            )
