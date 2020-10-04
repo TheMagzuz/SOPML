@@ -64,5 +64,5 @@ class Layer:
         s = 0
 
         for i in range(self.nodeCount):
-            s += (target[i] - self.outputValues) ** 2
-        s /= self.nodeCount
+            s += ((target[i] - self.outputValues) ** 2) / 2
+        return s
