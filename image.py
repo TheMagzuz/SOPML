@@ -9,7 +9,7 @@ class Image:
         self.width = width
         self.height = height
 
-    def Data2D(self, forceRecalculate=False):
+    def data2D(self, forceRecalculate=False):
         if not forceRecalculate and self.displayData.size != 0:
             return self.displayData
 
@@ -20,3 +20,8 @@ class Image:
                 self.displayData[row, col] = self.data[row * self.width + col]
 
         return self.displayData
+
+    def expectedVector(self):
+        v = np.zeros(10)
+        v[self.label] = 1
+        return v

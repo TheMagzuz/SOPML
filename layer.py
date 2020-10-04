@@ -25,7 +25,7 @@ class Layer:
             if biases != None:
                 self.biases = biases
             else:
-                self.biases = np.empty((nodes, previous.nodeCount))
+                self.biases = np.empty(nodes)
 
     def calculateValues(self, image: Image, forceRecalculate=False) -> np.ndarray:
         """
@@ -56,5 +56,5 @@ class Layer:
         s = 0
 
         for i in range(self.nodeCount):
-            s += (target[i] - self.outputValues) ** 2
-        s /= self.nodeCount
+            s += ((target[i] - self.outputValues) ** 2) / 2
+        return s
