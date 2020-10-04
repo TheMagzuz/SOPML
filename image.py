@@ -9,7 +9,7 @@ class Image:
         self.width = width
         self.height = height
 
-    def Data2D(self, forceRecalculate=False):
+    def data2D(self, forceRecalculate=False):
         if not forceRecalculate and self.displayData.size != 0:
             return self.displayData
 
