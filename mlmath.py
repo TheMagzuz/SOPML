@@ -24,3 +24,7 @@ def normalize(x, min, max):
     Return a value between 0 and 1, representing where it lies between min and max
     """
     return (x - min) / (max - min)
+
+
+def deltaRule(target, output, prevOutput):
+    return -(target - output) * output * (1 - output) * prevOutput
