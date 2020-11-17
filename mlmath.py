@@ -10,6 +10,15 @@ def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
 
+def sigmoid_prime(x):
+    """
+    Return σ'(x)
+
+    σ'(x) = σ(x)*(1-σ(x))
+    """
+    return sigmoid(x) * (1 - sigmoid(x))
+
+
 def normalize(x, min, max):
     """
     Return a value between 0 and 1, representing where it lies between min and max
