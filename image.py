@@ -1,4 +1,5 @@
 import numpy as np
+import mlmath
 
 
 class Image:
@@ -8,6 +9,10 @@ class Image:
         self.displayData = np.empty(0)
         self.width = width
         self.height = height
+        self.normalizedData = []
+
+        for data in self.data:
+            self.normalizedData.append(mlmath.normalize(data, 0, 255))
 
     def data2D(self, forceRecalculate=False):
         if not forceRecalculate and self.displayData.size != 0:

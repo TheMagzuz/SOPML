@@ -28,7 +28,7 @@ def loadImages(imagesPath="train-images.idx3-ubyte"):
         imageRows = int.from_bytes(imagesFile.read(4), "big")
         imageColumns = int.from_bytes(imagesFile.read(4), "big")
 
-        images = np.empty((numImages, imageRows, imageColumns), np.ubyte)
+        # images = np.empty((numImages, imageRows, imageColumns), np.ubyte)
         imageBytes = imagesFile.read()
         stepSize = imageRows * imageColumns
 
