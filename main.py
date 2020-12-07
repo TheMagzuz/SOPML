@@ -27,7 +27,7 @@ def run(weights=None, modelFile=None, costGraphFile=None):
     tLoadTest = perf_counter()
     dpTest = Dataparser()
     dpTest.loadLabels("t10k-labels.idx1-ubyte")
-    dpTest.loadImages("t10k-images.idx1-ubyte")
+    dpTest.loadImages("t10k-images.idx3-ubyte")
 
     tLoadTest = perf_counter()
     print(f"Done! Loading test images took {tLoadTest-tLoadTrain}s")
