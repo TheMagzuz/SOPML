@@ -6,12 +6,12 @@ import mlmath
 from dataparser import Dataparser
 from pprint import pprint
 from time import perf_counter
-
+import pickle
 
 learningRate = 0.3
 
 
-def run():
+def run(weights=None):
     # Get training images and labels
     tStart = perf_counter()
     print("Loading training images...")
@@ -34,7 +34,11 @@ def run():
     print("Creating layers...")
     layersTemplate = [len(dpTrain.images[0].normalizedData), 16, 16, 10]
     layers = createLayers(layersTemplate)
-    randomizeLayers(layers, 0.05)
+    if weights == None:
+        randomizeLayers(layers, 0.05)
+    else:
+        for layer in layers:
+            layer.weights = weights.pop()
 
     tCreate = perf_counter()
 
@@ -87,6 +91,19 @@ def trainingPass(layers, dpTrain):
                     learningRate * layer.deltas[current] * layer.inputValues[current]
                 )
                 layer.weights[current, prev] += change
+
+
+def saveWeights(layers, filename):
+    allWeights = []
+    for layer in layers:
+        allWeights.append(layer.weights)
+    with open(filename, "wb+") as outFile:
+        pickle.dump(allWeights, outFile)
+
+
+def loadWeights(filename):
+    with open(filename, "rb") as infile:
+        return pickle.load(filename)
 
 
 def createLayers(layers: list):
