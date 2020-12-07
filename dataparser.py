@@ -6,9 +6,9 @@ from image import Image
 
 class Dataparser:
     def __init__(self):
-        labels = []
-        images = []
-        imagesLin = []
+        self.labels = []
+        self.images = []
+        self.imagesLin = []
 
     def loadLabels(self, labelsPath="train-labels.idx1-ubyte", updateImages=True):
         with open(labelsPath, "rb") as labelsFile:

@@ -54,7 +54,7 @@ def run():
 
     print("Running on all training examples...")
     for n in range(100):
-        trainingPass(layers)
+        trainingPass(layers, dpTrain)
         print(f"Done pass {n}/100")
     tTrain = perf_counter()
     print(f"Done! Running all training examples took {tTrain-tCreate}s")
@@ -75,7 +75,7 @@ def run():
     print(f"Label: {dpTrain.images[0].label}")
 
 
-def trainingPass(layers):
+def trainingPass(layers, dpTrain):
     for t in dpTrain.images:
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
         layers[0].calculateDeltas(t.expectedVector(), forceRecalculate=True)
