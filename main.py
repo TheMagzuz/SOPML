@@ -26,8 +26,8 @@ def run(weights=None, modelFile=None, costGraphFile=None):
     # Get test images and labels
     tLoadTest = perf_counter()
     dpTest = Dataparser()
-    dpTest.loadLabels()
-    dpTest.loadImages()
+    dpTest.loadLabels("t10k-labels.idx1-ubyte")
+    dpTest.loadImages("t10k-images.idx1-ubyte")
 
     tLoadTest = perf_counter()
     print(f"Done! Loading test images took {tLoadTest-tLoadTrain}s")
@@ -94,6 +94,14 @@ def trainingPass(layers, dpTrain):
                     learningRate * layer.deltas[current] * layer.inputValues[current]
                 )
                 layer.weights[current, prev] += change
+
+
+def testPass(layers: typing.List[Layer], dpTest: Dataparser):
+    costSum = 0
+    for t in dpTest.images:
+        layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
+        costSum += layers[-1].cost(t.expectedVector())
+    return costSum / len(dpTest.images)
 
 
 def saveWeights(layers, filename):
