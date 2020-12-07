@@ -108,7 +108,7 @@ def saveWeights(layers, filename):
 
 def loadWeights(filename):
     with open(filename, "rb") as infile:
-        return pickle.load(filename)
+        return pickle.load(infile)
 
 
 def createLayers(layers: list):
