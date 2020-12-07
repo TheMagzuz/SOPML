@@ -1,5 +1,6 @@
 import struct
 import numpy as np
+from typing import List
 import mlmath
 from image import Image
 
@@ -7,7 +8,7 @@ from image import Image
 class Dataparser:
     def __init__(self):
         self.labels = []
-        self.images = []
+        self.images: List[Image] = []
         self.imagesLin = []
 
     def loadLabels(self, labelsPath="train-labels.idx1-ubyte", updateImages=True):
