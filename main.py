@@ -3,34 +3,42 @@ import numpy as np
 import typing
 import random
 import mlmath
-import dataparser
+from dataparser import Dataparser
 from pprint import pprint
 from time import perf_counter
 
 
-learningRate = 0.05
+learningRate = 0.3
 
 
 def run():
     # Get training images and labels
     tStart = perf_counter()
+    print("Loading training images...")
+    dpTrain = Dataparser()
+    dpTrain.loadLabels()
+    dpTrain.loadImages()
 
-    print("Loading images...")
-    dataparser.loadLabels()
-    dataparser.loadImages()
+    tLoadTrain = perf_counter()
+    print(f"Done! Loading training images took {tLoadTrain-tStart}s")
 
-    tLoad = perf_counter()
+    # Get test images and labels
+    tLoadTest = perf_counter()
+    dpTest = Dataparser()
+    dpTest.loadLabels()
+    dpTest.loadImages()
 
-    print(f"Done! Loading images took {tLoad-tStart}s")
+    tLoadTest = perf_counter()
+    print(f"Done! Loading test images took {tLoadTest-tLoadTrain}s")
 
     print("Creating layers...")
-    layersTemplate = [len(dataparser.images[0].normalizedData), 2, 10]
+    layersTemplate = [len(dpTrain.images[0].normalizedData), 16, 16, 10]
     layers = createLayers(layersTemplate)
     randomizeLayers(layers, 0.05)
 
     tCreate = perf_counter()
 
-    print(f"Done! Creating layers took {tCreate-tLoad}s")
+    print(f"Done! Creating layers took {tCreate-tLoadTrain}s")
 
     for layer in layers:
         if not hasattr(layer, "weights"):
@@ -39,9 +47,9 @@ def run():
             pprint(layer.weights)
 
     layers[-1].calculateValues(
-        np.array(dataparser.images[0].normalizedData), forceRecalculate=True
+        np.array(dpTrain.images[0].normalizedData), forceRecalculate=True
     )
-    firstCost = layers[-1].cost(dataparser.images[0].expectedVector())
+    firstCost = layers[-1].cost(dpTrain.images[0].expectedVector())
     print(f"Initial cost: {firstCost}")
 
     print("Running on all training examples...")
@@ -56,18 +64,18 @@ def run():
             pprint(layer.weights)
 
     layers[-1].calculateValues(
-        np.array(dataparser.images[0].normalizedData), forceRecalculate=True
+        np.array(dpTrain.images[0].normalizedData), forceRecalculate=True
     )
-    secondCost = layers[-1].cost(dataparser.images[0].expectedVector())
+    secondCost = layers[-1].cost(dpTrain.images[0].expectedVector())
     print(f"New cost: {secondCost}")
     print("Outputs:")
     for output in layers[-1].outputValues:
         print(output)
-    print(f"Label: {dataparser.images[0].label}")
+    print(f"Label: {dpTrain.images[0].label}")
 
 
 def trainingPass(layers):
-    for t in dataparser.images:
+    for t in dpTrain.images:
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
         layers[0].calculateDeltas(t.expectedVector(), forceRecalculate=True)
         for layer in layers:

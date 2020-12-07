@@ -3,46 +3,45 @@ import numpy as np
 import mlmath
 from image import Image
 
-labels = []
-images = []
-# imagesLin = np.empty((1))
-# normalizedImages = np.empty((1))
 
+class Dataparser:
+    def __init__(self):
+        labels = []
+        images = []
+        imagesLin = []
 
-def loadLabels(labelsPath="train-labels.idx1-ubyte", updateImages=True):
-    global labels
-    with open(labelsPath, "rb") as labelsFile:
-        labelsFile.seek(8)
-        labelBytes = labelsFile.read()
-        labels = struct.unpack(">" + "B" * (len(labelBytes)), labelBytes)
-    if updateImages and len(images) > 0:
-        for imageIndex in range(len(images)):
-            images[imageIndex].label = labels[imageIndex]
+    def loadLabels(self, labelsPath="train-labels.idx1-ubyte", updateImages=True):
+        with open(labelsPath, "rb") as labelsFile:
+            labelsFile.seek(8)
+            labelBytes = labelsFile.read()
+            self.labels = struct.unpack(">" + "B" * (len(labelBytes)), labelBytes)
+        if updateImages and len(self.images) > 0:
+            for imageIndex in range(len(self.images)):
+                self.images[imageIndex].label = self.labels[imageIndex]
 
+    def loadImages(self, imagesPath="train-images.idx3-ubyte"):
+        with open(imagesPath, "rb") as imagesFile:
+            imagesFile.seek(4)
+            numImages = int.from_bytes(imagesFile.read(4), "big")
+            imageRows = int.from_bytes(imagesFile.read(4), "big")
+            imageColumns = int.from_bytes(imagesFile.read(4), "big")
 
-def loadImages(imagesPath="train-images.idx3-ubyte"):
-    global images
-    with open(imagesPath, "rb") as imagesFile:
-        imagesFile.seek(4)
-        numImages = int.from_bytes(imagesFile.read(4), "big")
-        imageRows = int.from_bytes(imagesFile.read(4), "big")
-        imageColumns = int.from_bytes(imagesFile.read(4), "big")
+            # images = np.empty((numImages, imageRows, imageColumns), np.ubyte)
+            imageBytes = imagesFile.read()
+            stepSize = imageRows * imageColumns
 
-        # images = np.empty((numImages, imageRows, imageColumns), np.ubyte)
-        imageBytes = imagesFile.read()
-        stepSize = imageRows * imageColumns
+            self.imagesLin = [
+                imageBytes[i : i + stepSize]
+                for i in range(0, len(imageBytes), stepSize)
+            ]
 
-        imagesLin = [
-            imageBytes[i : i + stepSize] for i in range(0, len(imageBytes), stepSize)
-        ]
-
-        for imageIndex in range(numImages):
-            imageData = imagesLin[imageIndex]
-            images.append(
-                Image(
-                    imageData,
-                    (-1 if len(labels) <= 0 else labels[imageIndex]),
-                    imageColumns,
-                    imageRows,
+            for imageIndex in range(numImages):
+                imageData = self.imagesLin[imageIndex]
+                self.images.append(
+                    Image(
+                        imageData,
+                        (-1 if len(self.labels) <= 0 else self.labels[imageIndex]),
+                        imageColumns,
+                        imageRows,
+                    )
                 )
-            )
