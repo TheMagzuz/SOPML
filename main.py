@@ -7,11 +7,12 @@ from dataparser import Dataparser
 from pprint import pprint
 from time import perf_counter
 import pickle
+import argparse
 
 learningRate = 0.3
 
 
-def run(weights=None):
+def run(weights=None, modelFile=None, costGraphFile=None):
     # Get training images and labels
     tStart = perf_counter()
     print("Loading training images...")
@@ -152,4 +153,17 @@ def findDerivatives(layers: typing.List[Layer], target: np.ndarray):
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-i", help="The model file to be loaded")
+    parser.add_argument("-m", help="The file to save the model to")
+    parser.add_argument("-c", help="The file to save the cost graph to")
+
+    args = parser.parse_args()
+
+    weights = None
+
+    if args.i:
+        weights = loadWeights(args.i)
+
+    run(weights, args.m, args.c)
