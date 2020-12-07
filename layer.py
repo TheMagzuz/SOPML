@@ -91,12 +91,5 @@ class Layer:
 
         return self.deltas
 
-    def updateWeights(self):
-        if self.previous == None or self.next == None:
-            return
-        for s, r in np.ndindex(self.weights.shape):
-            change = learningRate * self.deltas[r] * self.inputValues[r]
-            self.weights[s, r] += change
-
     def __repr__(self):
         return str(self.__dict__)
