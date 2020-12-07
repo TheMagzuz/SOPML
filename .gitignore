@@ -139,4 +139,4 @@ cython_debug/
 
 .vim/coc-settings.json
 
-train-*-ubyte
+*-ubyte
