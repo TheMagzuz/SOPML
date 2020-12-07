@@ -111,6 +111,11 @@ def loadWeights(filename):
         return pickle.load(infile)
 
 
+def appendCostGraph(cost, filename):
+    with open(filename, "a+") as outfile:
+        outfile.write(f"{cost},")
+
+
 def createLayers(layers: list):
     layerList = []
     l = Layer(layers[0])
