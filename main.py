@@ -53,8 +53,9 @@ def run():
     print(f"Initial cost: {firstCost}")
 
     print("Running on all training examples...")
-    for _ in range(1):
+    for n in range(100):
         trainingPass(layers)
+        print(f"Done pass {n}/100")
     tTrain = perf_counter()
     print(f"Done! Running all training examples took {tTrain-tCreate}s")
     for layer in layers:
