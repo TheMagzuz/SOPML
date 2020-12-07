@@ -61,12 +61,25 @@ def run(weights=None, modelFile=None, costGraphFile=None):
 
     print("Running on all training examples...")
     for n in range(100):
+        tA = perf_counter()
         trainingPass(layers, dpTrain)
-        print(f"Done pass {n}/100")
+        tB = perf_counter()
+        print(f"Done pass {n}/100 in {tB-tA}s")
         if modelFile != None:
             print("Saving layers")
             saveWeights(layers, modelFile)
             print("Done!")
+        tC = perf_counter()
+        print("Testing model")
+        cost = testPass(layers, dpTest)
+        print(f"Done! Testing took {tC-tB}s. Cost: {cost}")
+        if costGraphFile != None:
+            print("Saving cost graph")
+            appendCostGraph(cost, costGraphFile)
+            print("Done!")
+
+        tFinal = perf_counter()
+        print(f"Total epoch time: {tFinal-tA}s")
         print("Running next epoch")
     tTrain = perf_counter()
     print(f"Done! Running all training examples took {tTrain-tCreate}s")
