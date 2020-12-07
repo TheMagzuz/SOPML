@@ -39,6 +39,8 @@ def run(weights=None, modelFile=None, costGraphFile=None):
         randomizeLayers(layers, 0.05)
     else:
         for layer in layers:
+            if layer.previous == None:
+                continue
             layer.weights = weights.pop()
 
     tCreate = perf_counter()
@@ -97,6 +99,8 @@ def trainingPass(layers, dpTrain):
 def saveWeights(layers, filename):
     allWeights = []
     for layer in layers:
+        if not hasattr(layer, "weights"):
+            continue
         allWeights.append(layer.weights)
     with open(filename, "wb+") as outFile:
         pickle.dump(allWeights, outFile)
