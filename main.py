@@ -63,6 +63,11 @@ def run(weights=None, modelFile=None, costGraphFile=None):
     for n in range(100):
         trainingPass(layers, dpTrain)
         print(f"Done pass {n}/100")
+        if modelFile != None:
+            print("Saving layers")
+            saveWeights(layers, modelFile)
+            print("Done!")
+        print("Running next epoch")
     tTrain = perf_counter()
     print(f"Done! Running all training examples took {tTrain-tCreate}s")
     for layer in layers:
