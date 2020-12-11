@@ -8,8 +8,10 @@ from pprint import pprint
 from time import perf_counter
 import pickle
 import argparse
+from tqdm import tqdm
 
 learningRate = 0.3
+epochs = 1
 
 
 def run(weights=None, modelFile=None, costGraphFile=None):
@@ -33,7 +35,7 @@ def run(weights=None, modelFile=None, costGraphFile=None):
     print(f"Done! Loading test images took {tLoadTest-tLoadTrain}s")
 
     print("Creating layers...")
-    layersTemplate = [len(dpTrain.images[0].normalizedData), 16, 16, 10]
+    layersTemplate = [len(dpTrain.images[0].normalizedData), 32, 10]
     layers = createLayers(layersTemplate)
     if weights == None:
         randomizeLayers(layers, 0.05)
@@ -60,11 +62,11 @@ def run(weights=None, modelFile=None, costGraphFile=None):
     print(f"Initial cost: {firstCost}")
 
     print("Running on all training examples...")
-    for n in range(100):
+    for n in range(epochs):
         tA = perf_counter()
         trainingPass(layers, dpTrain)
         tB = perf_counter()
-        print(f"Done pass {n}/100 in {tB-tA}s")
+        print(f"Done pass {n+1}/{epochs} in {tB-tA}s")
         if modelFile != None:
             print("Saving layers")
             saveWeights(layers, modelFile)
@@ -101,24 +103,37 @@ def run(weights=None, modelFile=None, costGraphFile=None):
 
 
 def trainingPass(layers, dpTrain):
-    for t in dpTrain.images:
+    examples = 0
+    for t in tqdm(dpTrain.images):
+        examples += 1
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
         layers[0].calculateDeltas(t.expectedVector(), forceRecalculate=True)
         for layer in layers:
-            if layer.previous == None:
+            if layer.next == None:
                 continue
-            for current, prev in np.ndindex(layer.weights.shape):
+            for current, prev in np.ndindex(layer.next.weights.shape):
                 change = (
-                    learningRate * layer.deltas[current] * layer.inputValues[current]
+                    learningRate * layer.deltas[current] * layer.outputValues[current]
                 )
-                layer.weights[current, prev] += change
+                layer.next.weights[current, prev] += change
 
 
 def testPass(layers: typing.List[Layer], dpTest: Dataparser):
     costSum = 0
-    for t in dpTest.images:
+    correctGuesses = 0
+    for t in tqdm(dpTest.images):
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
+        guess = np.argmax(layers[-1].outputValues)
+        if guess == t.label:
+            correctGuesses += 1
         costSum += layers[-1].cost(t.expectedVector())
+
+    image = dpTest.images[random.randint(0, len(dpTest.images) - 1)]
+    v = layers[-1].calculateValues(np.array(image.normalizedData))
+    print(f"Cost: {layers[-1].cost(image.expectedVector())})")
+    print(f"Accuracy: {correctGuesses/len(dpTest.images)}")
+    print(f"Output: {v}")
+    print(f"Label: {image.label}")
     return costSum / len(dpTest.images)
 
 

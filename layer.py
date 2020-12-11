@@ -37,7 +37,7 @@ class Layer:
             else:
                 self.biases = np.empty(nodes)
 
-    def calculateValues(self, data: np.ndarray, forceRecalculate=False) -> np.ndarray:
+    def calculateValues(self, data: np.ndarray, forceRecalculate=True) -> np.ndarray:
         """
         Calculate the values of the layer, and set them on the layer object
 
@@ -50,12 +50,12 @@ class Layer:
             return self.outputValues
         if self.previous == None:
             self.inputValues = data
-            self.outputValues = np.vectorize(mlmath.sigmoid)(self.inputValues)
+            self.outputValues = mlmath.sigmoid(self.inputValues)
             return self.outputValues
 
         prevValues = self.previous.calculateValues(data)
         self.inputValues = np.dot(self.weights, prevValues) + self.biases
-        self.outputValues = np.vectorize(mlmath.sigmoid)(self.inputValues)
+        self.outputValues = mlmath.sigmoid(self.inputValues)
 
         return self.outputValues
 
@@ -65,30 +65,26 @@ class Layer:
         s = 0
 
         for i in range(self.nodeCount):
-            s += ((target[i] - self.outputValues[i]) ** 2) / 2
-        return s
+            s += (target[i] - self.outputValues[i]) ** 2
+        return s / 2
 
-    def calculateDeltas(self, target: np.ndarray, forceRecalculate=False) -> np.ndarray:
+    def calculateDeltas(self, target: np.ndarray, forceRecalculate=True) -> np.ndarray:
         if not forceRecalculate and self.deltas != None:
             return self.deltas
-        self.deltas = [0] * self.nodeCount
+        self.deltas = np.empty(self.nodeCount)
         if self.next == None:  # If there is no next layer, ie. this is the output layer
-            for r in range(self.nodeCount):
-                self.deltas[r] = (
-                    self.outputValues[r]
-                    * (1 - self.outputValues[r])
-                    * (target[r] - self.outputValues[r])
-                )
+            self.deltas = (
+                self.outputValues
+                * (1 - self.outputValues)
+                * (target - self.outputValues)
+            )
         else:
-            frontDeltas = self.next.calculateDeltas(target, False)
-            for r in range(self.nodeCount):
-                sDownstream = 0
-                for s in range(self.next.weights.shape[0]):
-                    sDownstream += self.next.weights[s, r] * frontDeltas[s]
-                self.deltas[r] = (
-                    self.outputValues[r] * (1 - self.outputValues[r]) * sDownstream
-                )
-
+            frontDeltas = self.next.calculateDeltas(target, True)
+            self.deltas = (
+                self.outputValues
+                * (1 - self.outputValues)
+                * (np.dot(self.next.weights.transpose(), frontDeltas))
+            )
         return self.deltas
 
     def __repr__(self):
