@@ -106,7 +106,7 @@ def trainingPass(layers: typing.List[Layer], dpTrain, start=0, end=None):
             if layer.previous == None:
                 continue
             changes = [
-                np.outer(error, layer.previous.outputValues)
+                learningRate * np.outer(error, layer.previous.outputValues)
             ] + changes  # Put a matrix of the output values multiplied by the error at the front of the changes list
             error = (
                 np.dot(layer.weights.transpose(), error)
@@ -115,7 +115,7 @@ def trainingPass(layers: typing.List[Layer], dpTrain, start=0, end=None):
             )
         for change, layer in zip(changes, layers[1:]):
             if layer.previous != None:
-                layer.weights += change * learningRate
+                layer.weights += change
 
 
 def testPass(layers: typing.List[Layer], dpTest: Dataparser):
