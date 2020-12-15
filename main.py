@@ -4,7 +4,6 @@ import typing
 import random
 import mlmath
 from dataparser import Dataparser
-from pprint import pprint
 from time import perf_counter
 import pickle
 import argparse
@@ -14,7 +13,7 @@ learningRate = 0.3
 epochs = 1
 
 
-def run(weights=None, modelFile=None, costGraphFile=None):
+def run(weights=None, modelFile=None, costGraphFile=None, testFrequency=1000):
     # Get training images and labels
     tStart = perf_counter()
     print("Loading training images...")
@@ -49,22 +48,10 @@ def run(weights=None, modelFile=None, costGraphFile=None):
 
     print(f"Done! Creating layers took {tCreate-tLoadTrain}s")
 
-    for layer in layers:
-        if not hasattr(layer, "weights"):
-            pprint("None")
-        else:
-            pprint(layer.weights)
-
-    layers[-1].calculateValues(
-        np.array(dpTrain.images[0].normalizedData), forceRecalculate=True
-    )
-    firstCost = layers[-1].cost(dpTrain.images[0].expectedVector())
-    print(f"Initial cost: {firstCost}")
-
     print("Running on all training examples...")
     for n in range(epochs):
         tA = perf_counter()
-        trainingPass(layers, dpTrain)
+        accs = fullTrainingPass(layers, dpTrain, dpTest, testFrequency)
         tB = perf_counter()
         print(f"Done pass {n+1}/{epochs} in {tB-tA}s")
         if modelFile != None:
@@ -73,11 +60,11 @@ def run(weights=None, modelFile=None, costGraphFile=None):
             print("Done!")
         tC = perf_counter()
         print("Testing model")
-        cost = testPass(layers, dpTest)
-        print(f"Done! Testing took {tC-tB}s. Cost: {cost}")
+        accs.append(testPass(layers, dpTest))
+        print(f"Done! Testing took {tC-tB}s. Accuracy: {accs[-1]}")
         if costGraphFile != None:
             print("Saving cost graph")
-            appendCostGraph(cost, costGraphFile)
+            appendCostGraph(accs, costGraphFile)
             print("Done!")
 
         tFinal = perf_counter()
@@ -85,56 +72,62 @@ def run(weights=None, modelFile=None, costGraphFile=None):
         print("Running next epoch")
     tTrain = perf_counter()
     print(f"Done! Running all training examples took {tTrain-tCreate}s")
-    for layer in layers:
-        if not hasattr(layer, "weights"):
-            pprint("None")
-        else:
-            pprint(layer.weights)
 
-    layers[-1].calculateValues(
-        np.array(dpTrain.images[0].normalizedData), forceRecalculate=True
+
+def fullTrainingPass(layers: typing.List[Layer], dpTrain, dpTest, testFrequency):
+    accs = []
+    t = tqdm(
+        range(0, len(dpTrain.images), testFrequency),
+        leave=True,
+        desc="Epoch (Acc: 0%)",
     )
-    secondCost = layers[-1].cost(dpTrain.images[0].expectedVector())
-    print(f"New cost: {secondCost}")
-    print("Outputs:")
-    for output in layers[-1].outputValues:
-        print(output)
-    print(f"Label: {dpTrain.images[0].label}")
+    for start in t:
+        trainingPass(layers, dpTrain, start, start + testFrequency)
+        acc = testPass(layers, dpTest)
+        t.set_description(f"Epoch (Acc: {acc:.1%})")
+        accs.append(acc)
+    return accs
 
 
-def trainingPass(layers, dpTrain):
-    examples = 0
-    for t in tqdm(dpTrain.images):
-        examples += 1
+def trainingPass(layers: typing.List[Layer], dpTrain, start=0, end=None):
+    if end == None:
+        end = len(dpTrain.images)
+    for t in tqdm(dpTrain.images[start:end], leave=False, desc="Training"):
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
-        layers[0].calculateDeltas(t.expectedVector(), forceRecalculate=True)
-        for layer in layers:
-            if layer.next == None:
+
+        error = layers[-1].calculateDeltas(
+            t.expectedVector(), True
+        )  # Calculate the output error, δk
+        changes = []
+        for layer in layers[::-1]:  # Loop through the layers from the back
+            if layer.previous == None:
                 continue
-            for current, prev in np.ndindex(layer.next.weights.shape):
-                change = (
-                    learningRate * layer.deltas[current] * layer.outputValues[current]
-                )
-                layer.next.weights[current, prev] += change
+            changes = [
+                np.outer(error, layer.previous.outputValues)
+            ] + changes  # Put a matrix of the output values multiplied by the error at the front of the changes list
+            error = (
+                np.dot(layer.weights.transpose(), error)
+                * layer.previous.outputValues
+                * (1 - layer.previous.outputValues)
+            )
+        for change, layer in zip(changes, layers[1:]):
+            if layer.previous != None:
+                layer.weights += change * learningRate
 
 
 def testPass(layers: typing.List[Layer], dpTest: Dataparser):
     costSum = 0
     correctGuesses = 0
-    for t in tqdm(dpTest.images):
+    for t in tqdm(dpTest.images, leave=False, desc="Testing"):
         layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
         guess = np.argmax(layers[-1].outputValues)
         if guess == t.label:
             correctGuesses += 1
         costSum += layers[-1].cost(t.expectedVector())
 
-    image = dpTest.images[random.randint(0, len(dpTest.images) - 1)]
-    v = layers[-1].calculateValues(np.array(image.normalizedData))
-    print(f"Cost: {layers[-1].cost(image.expectedVector())})")
-    print(f"Accuracy: {correctGuesses/len(dpTest.images)}")
-    print(f"Output: {v}")
-    print(f"Label: {image.label}")
-    return costSum / len(dpTest.images)
+    # print()
+    # print(f"Accuracy: {correctGuesses/len(dpTest.images)}", end="\r")
+    return correctGuesses / len(dpTest.images)
 
 
 def saveWeights(layers, filename):
@@ -152,9 +145,10 @@ def loadWeights(filename):
         return pickle.load(infile)
 
 
-def appendCostGraph(cost, filename):
+def appendCostGraph(costs, filename):
     with open(filename, "a+") as outfile:
-        outfile.write(f"{cost},")
+        string = ",".join(map(lambda v: f"{v:,f}", costs))
+        outfile.write(string + ",")
 
 
 def createLayers(layers: list):
@@ -208,12 +202,22 @@ if __name__ == "__main__":
     parser.add_argument("-i", help="The model file to be loaded")
     parser.add_argument("-m", help="The file to save the model to")
     parser.add_argument("-c", help="The file to save the cost graph to")
+    parser.add_argument(
+        "-f", help="The number of training examples between each test pass", type=int
+    )
 
     args = parser.parse_args()
 
     weights = None
+    testFrequency = args.f
 
     if args.i:
         weights = loadWeights(args.i)
 
-    run(weights, args.m, args.c)
+    if not args.f:
+        if args.c:
+            testFrequency = 500
+        else:
+            testFrequency = 1000
+
+    run(weights, args.m, args.c, testFrequency)

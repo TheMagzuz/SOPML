@@ -50,11 +50,11 @@ class Layer:
             return self.outputValues
         if self.previous == None:
             self.inputValues = data
-            self.outputValues = mlmath.sigmoid(self.inputValues)
+            self.outputValues = data
             return self.outputValues
 
         prevValues = self.previous.calculateValues(data)
-        self.inputValues = np.dot(self.weights, prevValues) + self.biases
+        self.inputValues = np.dot(self.weights, prevValues)
         self.outputValues = mlmath.sigmoid(self.inputValues)
 
         return self.outputValues
@@ -81,9 +81,9 @@ class Layer:
         else:
             frontDeltas = self.next.calculateDeltas(target, True)
             self.deltas = (
-                self.outputValues
-                * (1 - self.outputValues)
-                * (np.dot(self.next.weights.transpose(), frontDeltas))
+                self.next.inputValues
+                * (1 - self.next.inputValues)
+                * (np.dot(self.next.next.weights.transpose(), frontDeltas))
             )
         return self.deltas
 
