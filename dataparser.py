@@ -1,7 +1,5 @@
 import struct
-import numpy as np
 from typing import List
-import mlmath
 from image import Image
 
 

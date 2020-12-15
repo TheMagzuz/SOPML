@@ -1,13 +1,12 @@
-from layer import Layer
-import numpy as np
+from time import perf_counter
 import typing
 import random
-import mlmath
-from dataparser import Dataparser
-from time import perf_counter
 import pickle
 import argparse
+import numpy as np
 from tqdm import tqdm
+from layer import Layer
+from dataparser import Dataparser
 
 learningRate = 0.3
 epochs = 1
@@ -92,11 +91,15 @@ def fullTrainingPass(layers: typing.List[Layer], dpTrain, dpTest, testFrequency)
 def trainingPass(layers: typing.List[Layer], dpTrain, start=0, end=None):
     if end == None:
         end = len(dpTrain.images)
-    for t in tqdm(dpTrain.images[start:end], leave=False, desc="Training"):
-        layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
 
-        error = layers[-1].calculateDeltas(
-            t.expectedVector(), True
+    outputLayer = layers[-1]
+    for t in tqdm(dpTrain.images[start:end], leave=False, desc="Training"):
+        outputLayer.calculateValues(np.array(t.normalizedData))
+
+        error = (
+            outputLayer.outputValues
+            * (1 - outputLayer.outputValues)
+            * (t.expectedVector() - outputLayer.outputValues)
         )  # Calculate the output error, δk
         changes = []
         for layer in layers[::-1]:  # Loop through the layers from the back
@@ -119,7 +122,7 @@ def testPass(layers: typing.List[Layer], dpTest: Dataparser):
     costSum = 0
     correctGuesses = 0
     for t in tqdm(dpTest.images, leave=False, desc="Testing"):
-        layers[-1].calculateValues(np.array(t.normalizedData), forceRecalculate=True)
+        layers[-1].calculateValues(np.array(t.normalizedData))
         guess = np.argmax(layers[-1].outputValues)
         if guess == t.label:
             correctGuesses += 1
@@ -168,31 +171,6 @@ def randomizeLayers(layers: typing.List[Layer], variance: float):
         if not hasattr(l, "weights"):
             continue
         l.weights = rV(l.weights)
-
-
-def findDerivatives(layers: typing.List[Layer], target: np.ndarray):
-    cw = []
-    """ The partial derivative of cost over weight: ∂C/∂w_kj"""
-
-    for i in range(len(layers)):  # For every layer
-        if (
-            i == 0
-        ):  # If this is the output layer, the derivative can be calculated by the delta rule
-            cw[i] = []
-            for outnode, innode in np.ndindex(layers[i].weights.shape):
-                cw[i][outnode, innode] = mlmath.deltaRule(
-                    target[outnode],
-                    layers[i].outputValues[outnode],
-                    layers[i - 1].outputValues[innode],
-                )
-        else:
-            cw[i] = []
-            for outnode in range(layers[i].weights.shape[0]):
-                sDownstream = 0
-                """ The sum of the error of the downstream nodes """
-
-                # for innode in range(layers[i].weights.shape[1]):
-                # sDownstream += layers[i].weights[outnode, innode] *
 
 
 if __name__ == "__main__":
