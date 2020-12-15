@@ -40,11 +40,14 @@ class Layer:
         The calculated values
 
         """
+
+        # If this is the input layer, the values will simply be the input values
         if self.previous == None:
             self.inputValues = data
             self.outputValues = data
             return self.outputValues
 
+        # Otherwise, calculate the input values as weights · previous
         prevValues = self.previous.calculateValues(data)
         self.inputValues = np.dot(self.weights, prevValues)
         self.outputValues = mlmath.sigmoid(self.inputValues)
