@@ -128,8 +128,6 @@ def testPass(layers: typing.List[Layer], dpTest: Dataparser):
             correctGuesses += 1
         costSum += layers[-1].cost(t.expectedVector())
 
-    # print()
-    # print(f"Accuracy: {correctGuesses/len(dpTest.images)}", end="\r")
     return correctGuesses / len(dpTest.images)
 
 
