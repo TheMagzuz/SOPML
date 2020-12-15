@@ -54,5 +54,14 @@ class Layer:
 
         return self.outputValues
 
+    def cost(self, target: np.ndarray) -> float:
+        if self.nodeCount != target.shape[0]:
+            raise Exception("Target not same size as output layer")
+        s = 0
+
+        for i in range(self.nodeCount):
+            s += (target[i] - self.outputValues[i]) ** 2
+        return s / 2
+
     def __repr__(self):
         return str(self.__dict__)
