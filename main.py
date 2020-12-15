@@ -168,7 +168,6 @@ def randomizeLayers(layers: typing.List[Layer], variance: float):
         if not hasattr(l, "weights"):
             continue
         l.weights = rV(l.weights)
-        l.biases = rV(l.biases)  # Maybe leave out biases?
 
 
 def findDerivatives(layers: typing.List[Layer], target: np.ndarray):

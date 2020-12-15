@@ -10,13 +10,14 @@ class Layer:
         previous: Layer = None,
         next: Layer = None,
         weights: np.ndarray = None,
-        biases: np.ndarray = None,
     ):
         """Initializes a layer for neural networks
         Parameters:
             nodes (int): The amount nodes in the layer
             previous (Layer): The layer preceding this layer. None if this is the first layer
-            next (Layer):
+            next (Layer): The layer after this layer. None if this is the final layer
+            weights (np.ndarray): A matrix of the weights going into this layer. The matrix has the key (to, from)
+
         """
         self.nodeCount = nodes
         self.previous = previous
@@ -31,11 +32,6 @@ class Layer:
                 self.weights = weights
             else:
                 self.weights = np.empty((nodes, previous.nodeCount))
-
-            if biases != None:
-                self.biases = biases
-            else:
-                self.biases = np.empty(nodes)
 
     def calculateValues(self, data: np.ndarray, forceRecalculate=True) -> np.ndarray:
         """
