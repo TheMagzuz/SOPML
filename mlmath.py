@@ -8,7 +8,6 @@ def sigmoid(x):
     σ(x) = 1/(1 + e^(-x))
     """
     return 1 / (1 + np.exp(-x))
-    # return x if x > 0 else 0
 
 
 def normalize(x, min, max):
