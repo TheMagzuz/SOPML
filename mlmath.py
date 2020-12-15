@@ -2,11 +2,6 @@ import numpy as np
 
 
 def sigmoid(x):
-    """
-    Return σ(x)
-
-    σ(x) = 1/(1 + e^(-x))
-    """
     return 1 / (1 + np.exp(-x))
 
 
