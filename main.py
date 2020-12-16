@@ -59,8 +59,8 @@ def run(weights=None, modelFile=None, costGraphFile=None, testFrequency=1000):
             print("Done!")
         tC = perf_counter()
         print("Testing model")
-        accs.append(testPass(layers, dpTest))
-        print(f"Done! Testing took {tC-tB}s. Accuracy: {accs[-1]}")
+        accs.append((testPass(layers, dpTest), 60000))
+        print(f"Done! Testing took {tC-tB}s. Accuracy: {accs[0][-1]}")
         if costGraphFile != None:
             print("Saving cost graph")
             appendCostGraph(accs, costGraphFile)
@@ -84,7 +84,7 @@ def fullTrainingPass(layers: typing.List[Layer], dpTrain, dpTest, testFrequency)
         trainingPass(layers, dpTrain, start, start + testFrequency)
         acc = testPass(layers, dpTest)
         t.set_description(f"Epoch (Acc: {acc:.1%})")
-        accs.append(acc)
+        accs.append((acc, start + testFrequency))
     return accs
 
 
@@ -148,7 +148,7 @@ def loadWeights(filename):
 
 def appendCostGraph(costs, filename):
     with open(filename, "a+") as outfile:
-        string = ",".join(map(lambda v: f"{v:,f}", costs))
+        string = ",".join(map(lambda v: f"({v[1]},{v[0]:,f})", costs))
         outfile.write(string + ",")
 
 
